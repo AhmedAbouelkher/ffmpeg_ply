@@ -1,6 +1,10 @@
 .vscode/
 .cache
+compile_commands.json
+
 player
+sdl_program
+
+
 *.mp4
 *.ppm
-compile_commands.json
