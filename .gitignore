@@ -1,10 +1,11 @@
+.DS_Store
 .vscode/
 .cache
 compile_commands.json
 
+test_videos
 player
 sdl_program
-
 
 *.mp4
 *.ppm

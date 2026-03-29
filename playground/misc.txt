@@ -1,0 +1,86 @@
+int16_t *samples = (int16_t *)stream;
+int sample_count = len / sizeof(int16_t);
+for (int i = 0; i < sample_count; i++) {
+  samples[i] = (rand() % 65536) - 32768;  // Random 16-bit signed values
+}
+
+  // generate a beeping sine wave tone (440 Hz) with on/off periods
+  static double phase = 0.0;
+  static int sample_counter = 0;
+  const double frequency = 50.0;
+  const double sample_rate = 48000.0;
+  const double phase_increment = 2.0 * M_PI * frequency / sample_rate;
+  const int beep_duration = (int)(sample_rate * 0.2);   // 200ms tone
+  const int silence_duration = (int)(sample_rate * 0.2); // 200ms silence
+  const int cycle_length = beep_duration + silence_duration;
+
+  int16_t *samples = (int16_t *)stream;
+  int sample_count = len / sizeof(int16_t);
+  for (int i = 0; i < sample_count; i++) {
+    int position_in_cycle = sample_counter % cycle_length;
+    if (position_in_cycle < beep_duration) {
+      // Generate tone
+      double sample = sin(phase);
+      samples[i] = (int16_t)(sample * 32767);
+    } else {
+      // Silence
+      samples[i] = 0;
+    }
+    phase += phase_increment;
+    if (phase > 2.0 * M_PI) {
+      phase -= 2.0 * M_PI;
+    }
+    sample_counter++;
+  }
+
+
+
+void generate_beep_tone(int16_t *samples, int sample_count, double frequency,
+  double tune, double repeat_time) {
+static double phase = 0.0;
+static int sample_counter = 0;
+
+const double phase_increment = 2.0 * M_PI * frequency / DEFAULT_SAMPLE_RATE;
+const int half_cycle = (int)(DEFAULT_SAMPLE_RATE * repeat_time / 2.0);
+const int cycle_length = half_cycle * 2;
+const int16_t amplitude = (int16_t)(32767 * tune);
+
+for (int i = 0; i < sample_count; i++) {
+int position_in_cycle = sample_counter % cycle_length;
+if (position_in_cycle < half_cycle) {
+samples[i] = (int16_t)(sin(phase) * amplitude);
+} else {
+samples[i] = 0;
+}
+phase += phase_increment;
+if (phase > 2.0 * M_PI) {
+phase -= 2.0 * M_PI;
+}
+sample_counter++;
+}
+}
+
+void play_simple_song(int16_t *samples, int sample_count) {
+static double phase = 0.0;
+static int note_index = 0;
+static int samples_in_note = 0;
+const double notes[] = {50, 329, 392, 329, 261, 329,
+    392, 440, 80, 329, 261};
+const int note_count = 11;
+const int note_duration = (int)(DEFAULT_SAMPLE_RATE * 0.3);
+const int16_t amplitude = 10000;
+for (int i = 0; i < sample_count; i++) {
+double frequency = notes[note_index];
+double phase_increment = 2.0 * M_PI * frequency / DEFAULT_SAMPLE_RATE;
+samples[i] = (int16_t)(sin(phase) * amplitude);
+phase += phase_increment;
+if (phase > 2.0 * M_PI)
+phase -= 2.0 * M_PI;
+samples_in_note++;
+if (samples_in_note >= note_duration) {
+samples_in_note = 0;
+note_index = (note_index + 1) % note_count;
+phase = 0;
+}
+}
+}
